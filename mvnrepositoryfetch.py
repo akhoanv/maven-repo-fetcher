@@ -5,9 +5,7 @@ import requests
 import os
 import urllib.request
 import argparse
-
 from lxml import etree
-from collections import defaultdict
 
 """
 Maven central repository fetcher
@@ -18,6 +16,7 @@ Released under GNU Public License (GPL)
 
 MVN_REPO_URL = "https://repo1.maven.org/maven2/"
 
+# Parsing args
 parser = argparse.ArgumentParser(description='Fetching packages from Maven central repository')
 parser.add_argument("dependencies", metavar='dependencies', type=str, nargs='+', help='Dependencies to fetch')
 parser.add_argument('--javadoc', dest='javadoc', action='store_true', help='Fetch Javadoc if available')
@@ -32,8 +31,6 @@ parser.set_defaults(tests=False)
 parser.set_defaults(recursive=False)
 
 args = parser.parse_args()
-
-deps = args.dependencies
 
 def parsePackage(packageString):
 	depSplit = dep.split(":")
@@ -61,7 +58,6 @@ def fetchPackage(name, package, version):
 	print("Package -- Name: " + name + "\n\t\\_ Group: " + package + "\n\t\\_ Version: " + version + "\n")
 	
 	requestUrl = MVN_REPO_URL + package.replace(".", "/") + "/" + name + "/" + version
-	
 	getRqst = requests.get(requestUrl)
 	
 	if getRqst.status_code == 404:
@@ -120,7 +116,9 @@ def fetchPackage(name, package, version):
 		if (args.recursive):
 			parsePom("./" + package.replace(".", "/") + "/" + name + "/" + version + "/" + fileName)
 
+# Go through provided dependencies
+deps = args.dependencies
+
 for dep in deps:	
 	package, name, version = parsePackage(dep)
-	
 	fetchPackage(name, package, version)
